@@ -1,21 +1,19 @@
-gh api graphql -f query='
-  query {
-    viewer {
-      projectV2(number: 1) {
-        id
-        fields(first: 20) {
-          nodes {
-            __typename
-            ... on ProjectV2SingleSelectField {
-              id
-              name
-              options {
-                id
-                name
-              }
-            }
-          }
-        }
-      }
-    }
-  }'
+name: Get Project ID
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  fetch-project-id:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Get Project ID
+        uses: monry/actions-get-project-id@v2
+        with:
+          github-token: ${{ secrets.GH_PAT }}
+          project-owner: 'NoxAstrica'
+          project-number: 1
