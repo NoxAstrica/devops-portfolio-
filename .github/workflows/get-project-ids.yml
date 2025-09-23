@@ -1,0 +1,31 @@
+name: Get Project IDs
+
+on:
+  workflow_dispatch: # lets you run it manually
+
+jobs:
+  fetch-ids:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate GH CLI
+        run: echo "${{ secrets.GH_PAT }}" | gh auth login --with-token
+
+      - name: Fetch Project IDs
+        run: |
+          gh api graphql -f query='
+          query {
+            viewer {
+              projectV2(number: 1) {
+                id
+                fields(first: 20) {
+                  nodes {
+                    id
+                    name
+                    ... on ProjectV2SingleSelectField {
+                      options { id name }
+                    }
+                  }
+                }
+              }
+            }
+          }'
