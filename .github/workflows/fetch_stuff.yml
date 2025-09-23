@@ -3,7 +3,7 @@ name: Fetch Project Info
 on:
   workflow_dispatch:
 
-jobs:
+jobs: 
   fetch-project-info:
     runs-on: ubuntu-latest
     steps:
