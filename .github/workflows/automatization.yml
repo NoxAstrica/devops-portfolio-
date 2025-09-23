@@ -21,67 +21,46 @@ jobs:
       - name: Authenticate GitHub CLI with PAT
         run: echo "${{ secrets.GH_PAT }}" | gh auth login --with-token
 
-      # Debug auth status (optional, helps a LOT)
-      - name: Check gh auth status
-        run: |
-          gh auth status
-          echo "Logged in as: $(gh api user --jq .login)"
-          gh --version
-
-      # === PR OPENED → Add to Project & Set Status to "Review"
-      - name: Add PR to project and move to Review
+      - name: Add PR and move to Review
         if: github.event_name == 'pull_request' && github.event.action == 'opened'
         run: |
-          # Add PR to project
-          ITEM_ID=$(gh project item-add 1 --owner "@me" --url "${{ github.event.pull_request.html_url }}" --format json -q ".id")
-          echo "Added PR to project with item ID: $ITEM_ID"
+          PROJECT_ID="PVT_kwHOCXv9ec4BDT_9"
+          STATUS_FIELD_ID="PVTSSF_lAHOCXv9ec4BDT_9zg1RKBc"
+          REVIEW_OPTION_ID="98236657"
+
+          ITEM_ID=$(gh project item-add "$PROJECT_ID" --url "${{ github.event.pull_request.html_url }}" --format json -q ".id")
 
           if [ -z "$ITEM_ID" ]; then
-            echo "❌ Error: Failed to add PR to project"
             exit 1
           fi
 
-          # Update status to "Review"
-          RESPONSE=$(gh api graphql -f query="
-            mutation {
-              updateProjectV2ItemFieldValue(
-                input: {
-                  projectId: \"PVT_YOUR_PROJECT_ID_HERE\"
-                  itemId: \"$ITEM_ID\"
-                  fieldId: \"PVTSSF_STATUS_FIELD_ID\"
-                  value: { singleSelectOptionId: \"REVIEW_OPTION_ID\" }
-                }
-              ) {
-                projectV2Item { id }
+          gh api graphql -f query='
+          mutation($itemId: ID!, $fieldId: ID!, $optionId: String!) {
+            updateProjectV2ItemField(input: {itemId: $itemId, fieldId: $fieldId, value: {singleSelectOptionId: $optionId}}) {
+              projectV2Item {
+                id
               }
-            }" --jq '.data.updateProjectV2ItemFieldValue.projectV2Item.id')
-          echo "✅ PR moved to Review, item updated: $RESPONSE"
+            }
+          }' -F itemId="$ITEM_ID" -F fieldId="$STATUS_FIELD_ID" -F optionId="$REVIEW_OPTION_ID"
 
-      # === ISSUE CLOSED → Add to Project & Set Status to "Done"
       - name: Add closed issue to project and move to Done
         if: github.event_name == 'issues' && github.event.action == 'closed'
         run: |
-          # Add issue to project
-          ITEM_ID=$(gh project item-add 1 --owner "@me" --url "${{ github.event.issue.html_url }}" --format json -q ".id")
-          echo "Added issue to project with item ID: $ITEM_ID"
+          PROJECT_ID="PVT_kwHOCXv9ec4BDT_9"
+          STATUS_FIELD_ID="PVTSSF_lAHOCXv9ec4BDT_9zg1RKBc"
+          DONE_OPTION_ID="51a48839"
+
+          ITEM_ID=$(gh project item-add "$PROJECT_ID" --url "${{ github.event.issue.html_url }}" --format json -q ".id")
 
           if [ -z "$ITEM_ID" ]; then
-            echo "❌ Error: Failed to add issue to project"
             exit 1
           fi
 
-          # Update status to "Done"
-          RESPONSE=$(gh api graphql -f query="
-            mutation {
-              updateProjectV2ItemFieldValue(
-                input: {
-                  projectId: \"PVT_YOUR_PROJECT_ID_HERE\"
-                  itemId: \"$ITEM_ID\"
-                  fieldId: \"PVTSSF_STATUS_FIELD_ID\"
-                  value: { singleSelectOptionId: \"DONE_OPTION_ID\" }
-                }
-              ) {
-                projectV2Item { id }
+          gh api graphql -f query='
+          mutation($itemId: ID!, $fieldId: ID!, $optionId: String!) {
+            updateProjectV2ItemField(input: {itemId: $itemId, fieldId: $fieldId, value: {singleSelectOptionId: $optionId}}) {
+              projectV2Item {
+                id
               }
-            }" --jq '.data.updateProjectV2ItemFieldValue.projectV2Item.id')
-          echo "✅ Issue moved to Done, item updated: $RESPONSE"
+            }
+          }' -F itemId="$ITEM_ID" -F fieldId="$STATUS_FIELD_ID" -F optionId="$DONE_OPTION_ID"
