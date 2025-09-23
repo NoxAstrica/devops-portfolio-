@@ -22,4 +22,3 @@ jobs:
       - name: Show Project ID
         run: echo "Project ID is ${{ steps.get_project.outputs.project-id }}"
 
-to also see statys field id and option id? SEPARATE CODE FROM THIS ONE. ALSO USE SIMPLE METHODS
