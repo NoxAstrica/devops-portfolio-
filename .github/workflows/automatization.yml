@@ -40,11 +40,18 @@ jobs:
           fi
 
           gh api graphql -f query='
-          mutation($itemId: ID!, $fieldId: ID!, $optionId: String!) {
-            updateProjectV2ItemFieldValue(input: {itemId: $itemId, fieldId: $fieldId, value: {singleSelectOptionId: $optionId}}) {
+          mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+            updateProjectV2ItemFieldValue(
+              input: {
+                projectId: $projectId,
+                itemId: $itemId,
+                fieldId: $fieldId,
+                value: { singleSelectOptionId: $optionId }
+              }
+            ) {
               projectV2Item { id }
             }
-          }' -F itemId="$ITEM_ID" -F fieldId="$STATUS_FIELD_ID" -F optionId="$REVIEW_OPTION_ID"
+          }' -F projectId="$PROJECT_ID" -F itemId="$ITEM_ID" -F fieldId="$STATUS_FIELD_ID" -F optionId="$REVIEW_OPTION_ID"
 
       - name: Add closed issue to project and move to Done
         if: github.event_name == 'issues' && github.event.action == 'closed'
@@ -65,8 +72,15 @@ jobs:
           fi
 
           gh api graphql -f query='
-          mutation($itemId: ID!, $fieldId: ID!, $optionId: String!) {
-            updateProjectV2ItemFieldValue(input: {itemId: $itemId, fieldId: $fieldId, value: {singleSelectOptionId: $optionId}}) {
+          mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+            updateProjectV2ItemFieldValue(
+              input: {
+                projectId: $projectId,
+                itemId: $itemId,
+                fieldId: $fieldId,
+                value: { singleSelectOptionId: $optionId }
+              }
+            ) {
               projectV2Item { id }
             }
-          }' -F itemId="$ITEM_ID" -F fieldId="$STATUS_FIELD_ID" -F optionId="$DONE_OPTION_ID"
+          }' -F projectId="$PROJECT_ID" -F itemId="$ITEM_ID" -F fieldId="$STATUS_FIELD_ID" -F optionId="$DONE_OPTION_ID"
