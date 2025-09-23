@@ -25,37 +25,92 @@ jobs:
       - name: Add PR to project and move to Review
         if: github.event_name == 'pull_request' && github.event.action == 'opened'
         run: |
-          # Add PR as card to the "Review" column
-          gh project card create \
-            --project 1 \
-            --owner NoxAstrica \
-            --column "Review" \
-            --content ${{ github.event.pull_request.html_url }}
+          # Get the project ID for your v2 board
+          PROJECT_ID=$(gh api graphql -f query='
+            query {
+              user(login: "NoxAstrica") {
+                projectV2(number: 1) {
+                  id
+                }
+              }
+            }' --jq '.data.user.projectV2.id')
 
-      # issue is closed (move to Done)
+          # Get the field ID for the "Status" field
+          STATUS_FIELD_ID=$(gh api graphql -f query='
+            query($projectId:ID!) {
+              node(id:$projectId) {
+                ... on ProjectV2 {
+                  fields(first:20) {
+                    nodes {
+                      id
+                      name
+                    }
+                  }
+                }
+              }
+            }' -F projectId="$PROJECT_ID" --jq '.data.node.fields.nodes[] | select(.name=="Status") | .id')
+
+          # Create the item in the project and set Status to "Review"
+          gh api graphql -f query='
+            mutation($projectId:ID!, $title:String!, $contentID:ID!, $statusFieldID:ID!, $statusValue:String!) {
+              addProjectV2Item(input:{projectId:$projectId, contentId:$contentID}) {
+                item {
+                  id
+                }
+              }
+              updateProjectV2ItemField(input:{projectId:$projectId, itemId:$contentID, fieldId:$statusFieldID, value:$statusValue}) {
+                projectV2Item {
+                  id
+                }
+              }
+            }' \
+            -F projectId="$PROJECT_ID" \
+            -F title="${{ github.event.pull_request.title }}" \
+            -F contentID="${{ github.event.pull_request.node_id }}" \
+            -F statusFieldID="$STATUS_FIELD_ID" \
+            -F statusValue='{"name":"Review"}'
+
+      # issue closed (move to Done)
       - name: Move Issue to Done
         if: github.event_name == 'issues' && github.event.action == 'closed'
         run: |
-          # Find the card ID for this issue in the project
-          CARD_ID=$(gh api \
-            -H "Accept: application/vnd.github.v3+json" \
-            /projects/columns/cards \
-            --jq ".[] | select(.content_url==\"${{ github.event.issue.url }}\") | .id")
+          PROJECT_ID=$(gh api graphql -f query='
+            query {
+              user(login: "NoxAstrica") {
+                projectV2(number: 1) {
+                  id
+                }
+              }
+            }' --jq '.data.user.projectV2.id')
 
-          if [ -z "$CARD_ID" ]; then
-            echo "Issue card not found, creating a new card in 'Done' column"
-            # Find Done column ID
-            COLUMN_ID=$(gh api -H "Accept: application/vnd.github.v3+json" /projects/1/columns \
-              --jq ".[] | select(.name==\"Done\") | .id")
-            # Create new card directly in Done column
-            gh project card create --column "$COLUMN_ID" --content "${{ github.event.issue.html_url }}"
-          else
-            # Move existing card to Done column
-            COLUMN_ID=$(gh api -H "Accept: application/vnd.github.v3+json" /projects/1/columns \
-              --jq ".[] | select(.name==\"Done\") | .id")
-            gh api -X POST \
-              -H "Accept: application/vnd.github.v3+json" \
-              /projects/columns/cards/$CARD_ID/moves \
-              -f position="top" \
-              -F column_id=$COLUMN_ID
-          fi
+          STATUS_FIELD_ID=$(gh api graphql -f query='
+            query($projectId:ID!) {
+              node(id:$projectId) {
+                ... on ProjectV2 {
+                  fields(first:20) {
+                    nodes {
+                      id
+                      name
+                    }
+                  }
+                }
+              }
+            }' -F projectId="$PROJECT_ID" --jq '.data.node.fields.nodes[] | select(.name=="Status") | .id')
+
+          gh api graphql -f query='
+            mutation($projectId:ID!, $contentID:ID!, $statusFieldID:ID!, $statusValue:String!) {
+              addProjectV2Item(input:{projectId:$projectId, contentId:$contentID}) {
+                item {
+                  id
+                }
+              }
+              updateProjectV2ItemField(input:{projectId:$projectId, itemId:$contentID, fieldId:$statusFieldID, value:$statusValue}) {
+                projectV2Item {
+                  id
+                }
+              }
+            }' \
+            -F projectId="$PROJECT_ID" \
+            -F contentID="${{ github.event.issue.node_id }}" \
+            -F statusFieldID="$STATUS_FIELD_ID" \
+            -F statusValue='{"name":"Done"}'
