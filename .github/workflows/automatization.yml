@@ -8,7 +8,7 @@ on:
 
 jobs:
   update-project:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     permissions:
       contents: read
       pull-requests: write
@@ -21,94 +21,67 @@ jobs:
       - name: Authenticate GitHub CLI with PAT
         run: echo "${{ secrets.GH_PAT }}" | gh auth login --with-token
 
-      # Pull request opened → move to "Review"
+      # Debug auth status (optional, helps a LOT)
+      - name: Check gh auth status
+        run: |
+          gh auth status
+          echo "Logged in as: $(gh api user --jq .login)"
+          gh --version
+
+      # === PR OPENED → Add to Project & Set Status to "Review"
       - name: Add PR to project and move to Review
         if: github.event_name == 'pull_request' && github.event.action == 'opened'
         run: |
-          # Get Project v2 ID
-          PROJECT_ID=$(gh api graphql -f query='
-            query {
-              user(login: "NoxAstrica") {
-                projectV2(number: 1) {
-                  id
-                }
-              }
-            }' --jq '.data.user.projectV2.id')
+          # Add PR to project
+          ITEM_ID=$(gh project item-add 1 --owner "@me" --url "${{ github.event.pull_request.html_url }}" --format json -q ".id")
+          echo "Added PR to project with item ID: $ITEM_ID"
 
-          # Get the ID of the Status field (single-select)
-          STATUS_FIELD_ID=$(gh api graphql -f query='
-            query($projectId: ID!) {
-              node(id: $projectId) {
-                ... on ProjectV2 {
-                  fields(first: 20) {
-                    nodes {
-                      __typename
-                      ... on ProjectV2SingleSelectField {
-                        id
-                        name
-                      }
-                    }
-                  }
-                }
-              }
-            }' -F projectId="$PROJECT_ID" --jq '.data.node.fields.nodes[] | select(.name=="Status") | .id')
+          if [ -z "$ITEM_ID" ]; then
+            echo "❌ Error: Failed to add PR to project"
+            exit 1
+          fi
 
-          # Add the PR to the project and set Status = "Review"
-          gh api graphql -f query='
-            mutation($projectId:ID!, $contentID:ID!, $statusFieldID:ID!) {
-              addProjectV2Item(input:{projectId:$projectId, contentId:$contentID}) {
-                item { id }
-              }
-              updateProjectV2ItemField(input:{projectId:$projectId, itemId:$contentID, fieldId:$statusFieldID, value:{name:"Review"}}) {
+          # Update status to "Review"
+          RESPONSE=$(gh api graphql -f query="
+            mutation {
+              updateProjectV2ItemFieldValue(
+                input: {
+                  projectId: \"PVT_YOUR_PROJECT_ID_HERE\"
+                  itemId: \"$ITEM_ID\"
+                  fieldId: \"PVTSSF_STATUS_FIELD_ID\"
+                  value: { singleSelectOptionId: \"REVIEW_OPTION_ID\" }
+                }
+              ) {
                 projectV2Item { id }
               }
-            }' \
-            -F projectId="$PROJECT_ID" \
-            -F contentID="${{ github.event.pull_request.node_id }}" \
-            -F statusFieldID="$STATUS_FIELD_ID"
+            }" --jq '.data.updateProjectV2ItemFieldValue.projectV2Item.id')
+          echo "✅ PR moved to Review, item updated: $RESPONSE"
 
-      # Issue closed → move to "Done"
-      - name: Move Issue to Done
+      # === ISSUE CLOSED → Add to Project & Set Status to "Done"
+      - name: Add closed issue to project and move to Done
         if: github.event_name == 'issues' && github.event.action == 'closed'
         run: |
-          # Get Project v2 ID
-          PROJECT_ID=$(gh api graphql -f query='
-            query {
-              user(login: "NoxAstrica") {
-                projectV2(number: 1) {
-                  id
-                }
-              }
-            }' --jq '.data.user.projectV2.id')
+          # Add issue to project
+          ITEM_ID=$(gh project item-add 1 --owner "@me" --url "${{ github.event.issue.html_url }}" --format json -q ".id")
+          echo "Added issue to project with item ID: $ITEM_ID"
 
-          # Get the ID of the Status field (single-select)
-          STATUS_FIELD_ID=$(gh api graphql -f query='
-            query($projectId: ID!) {
-              node(id: $projectId) {
-                ... on ProjectV2 {
-                  fields(first: 20) {
-                    nodes {
-                      __typename
-                      ... on ProjectV2SingleSelectField {
-                        id
-                        name
-                      }
-                    }
-                  }
-                }
-              }
-            }' -F projectId="$PROJECT_ID" --jq '.data.node.fields.nodes[] | select(.name=="Status") | .id')
+          if [ -z "$ITEM_ID" ]; then
+            echo "❌ Error: Failed to add issue to project"
+            exit 1
+          fi
 
-          # Add the issue to the project and set Status = "Done"
-          gh api graphql -f query='
-            mutation($projectId:ID!, $contentID:ID!, $statusFieldID:ID!) {
-              addProjectV2Item(input:{projectId:$projectId, contentId:$contentID}) {
-                item { id }
-              }
-              updateProjectV2ItemField(input:{projectId:$projectId, itemId:$contentID, fieldId:$statusFieldID, value:{name:"Done"}}) {
+          # Update status to "Done"
+          RESPONSE=$(gh api graphql -f query="
+            mutation {
+              updateProjectV2ItemFieldValue(
+                input: {
+                  projectId: \"PVT_YOUR_PROJECT_ID_HERE\"
+                  itemId: \"$ITEM_ID\"
+                  fieldId: \"PVTSSF_STATUS_FIELD_ID\"
+                  value: { singleSelectOptionId: \"DONE_OPTION_ID\" }
+                }
+              ) {
                 projectV2Item { id }
               }
-            }' \
-            -F projectId="$PROJECT_ID" \
-            -F contentID="${{ github.event.issue.node_id }}" \
-            -F statusFieldID="$STATUS_FIELD_ID"
+            }" --jq '.data.updateProjectV2ItemFieldValue.projectV2Item.id')
+          echo "✅ Issue moved to Done, item updated: $RESPONSE"
