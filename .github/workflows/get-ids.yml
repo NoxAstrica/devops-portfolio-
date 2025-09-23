@@ -1,0 +1,21 @@
+gh api graphql -f query='
+  query {
+    viewer {
+      projectV2(number: 1) {
+        id
+        fields(first: 20) {
+          nodes {
+            __typename
+            ... on ProjectV2SingleSelectField {
+              id
+              name
+              options {
+                id
+                name
+              }
+            }
+          }
+        }
+      }
+    }
+  }'
