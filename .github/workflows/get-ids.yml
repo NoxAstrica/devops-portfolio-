@@ -1,11 +1,13 @@
-name: Get Project Info
+wait how do I update 
+
+name: Get Project ID
 
 on:
   push:
     branches: [ main ]
 
 jobs:
-  fetch-project-info:
+  fetch-project-id:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -19,55 +21,7 @@ jobs:
           project-owner: 'NoxAstrica'
           project-number: 1
 
-      - name: Get Status Field and Option IDs
-        id: get_fields
-        run: |
-          PROJECT_ID="${{ steps.get_project.outputs.project-id }}"
+      - name: Show Project ID
+        run: echo "Project ID is ${{ steps.get_project.outputs.project-id }}"
 
-          # Fetch single-select fields and options
-          gh api graphql -f query='
-          query($projectId: ID!) {
-            node(id: $projectId) {
-              ... on ProjectV2 {
-                fields(first: 20) {
-                  nodes {
-                    __typename
-                    ... on ProjectV2SingleSelectField {
-                      id
-                      name
-                      options {
-                        id
-                        name
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }' -F projectId="$PROJECT_ID" > project_fields.json
-
-          # Extract field ID for "Status" (change name if your field is named differently)
-          STATUS_FIELD_ID=$(jq -r '.data.node.fields.nodes[] | select(.name=="Status") | .id' project_fields.json)
-          echo "STATUS_FIELD_ID=$STATUS_FIELD_ID" >> $GITHUB_ENV
-
-          # Extract option IDs
-          REVIEW_OPTION_ID=$(jq -r '.data.node.fields.nodes[] 
-            | select(.name=="Status") 
-            | .options[] 
-            | select(.name=="Review") 
-            | .id' project_fields.json)
-          DONE_OPTION_ID=$(jq -r '.data.node.fields.nodes[] 
-            | select(.name=="Status") 
-            | .options[] 
-            | select(.name=="Done") 
-            | .id' project_fields.json)
-
-          echo "REVIEW_OPTION_ID=$REVIEW_OPTION_ID" >> $GITHUB_ENV
-          echo "DONE_OPTION_ID=$DONE_OPTION_ID" >> $GITHUB_ENV
-
-      - name: Show IDs
-        run: |
-          echo "Project ID: ${{ steps.get_project.outputs.project-id }}"
-          echo "Status Field ID: $STATUS_FIELD_ID"
-          echo "Review Option ID: $REVIEW_OPTION_ID"
-          echo "Done Option ID: $DONE_OPTION_ID"
+to also see statys field id and option id? SEPARATE CODE FROM THIS ONE. ALSO USE SIMPLE METHODS
