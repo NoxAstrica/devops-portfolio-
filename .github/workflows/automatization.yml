@@ -27,24 +27,18 @@ jobs:
           PROJECT_ID="PVT_kwHOCXv9ec4BDT_9"
           STATUS_FIELD_ID="PVTSSF_lAHOCXv9ec4BDT_9zg1RKBc"
           REVIEW_OPTION_ID="98236657"
-          CONTENT_ID="${{ github.event.pull_request.node_id }}"
 
-          # Add PR to Project V2
           ITEM_ID=$(gh api graphql -f query='
           mutation($projectId: ID!, $contentId: ID!) {
             addProjectV2ItemById(input: {projectId: $projectId, contentId: $contentId}) {
-              item {
-                id
-              }
+              item { id }
             }
-          }' -F projectId="$PROJECT_ID" -F contentId="$CONTENT_ID" -q ".data.addProjectV2ItemById.item.id")
+          }' -F projectId="$PROJECT_ID" -F contentId="${{ github.event.pull_request.node_id }}" --jq ".data.addProjectV2ItemById.item.id")
 
           if [ -z "$ITEM_ID" ]; then
-            echo "Failed to create project item"
             exit 1
           fi
 
-          # Move to Review
           gh api graphql -f query='
           mutation($itemId: ID!, $fieldId: ID!, $optionId: String!) {
             updateProjectV2ItemField(input: {itemId: $itemId, fieldId: $fieldId, value: {singleSelectOptionId: $optionId}}) {
@@ -58,24 +52,18 @@ jobs:
           PROJECT_ID="PVT_kwHOCXv9ec4BDT_9"
           STATUS_FIELD_ID="PVTSSF_lAHOCXv9ec4BDT_9zg1RKBc"
           DONE_OPTION_ID="51a48839"
-          CONTENT_ID="${{ github.event.issue.node_id }}"
 
-          # Add issue to Project V2
           ITEM_ID=$(gh api graphql -f query='
           mutation($projectId: ID!, $contentId: ID!) {
             addProjectV2ItemById(input: {projectId: $projectId, contentId: $contentId}) {
-              item {
-                id
-              }
+              item { id }
             }
-          }' -F projectId="$PROJECT_ID" -F contentId="$CONTENT_ID" -q ".data.addProjectV2ItemById.item.id")
+          }' -F projectId="$PROJECT_ID" -F contentId="${{ github.event.issue.node_id }}" --jq ".data.addProjectV2ItemById.item.id")
 
           if [ -z "$ITEM_ID" ]; then
-            echo "Failed to create project item"
             exit 1
           fi
 
-          # Move to Done
           gh api graphql -f query='
           mutation($itemId: ID!, $fieldId: ID!, $optionId: String!) {
             updateProjectV2ItemField(input: {itemId: $itemId, fieldId: $fieldId, value: {singleSelectOptionId: $optionId}}) {
