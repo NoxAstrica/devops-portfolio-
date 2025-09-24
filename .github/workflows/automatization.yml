@@ -26,7 +26,6 @@ jobs:
         run: |
           PROJECT_ID="PVT_kwHOCXv9ec4BDT_9"
           STATUS_FIELD_ID="PVTSSF_lAHOCXv9ec4BDT_9zg1RKBc"
-          REVIEW_OPTION_ID=/"98236657/"
 
           ITEM_ID=$(gh api graphql -f query='
           mutation($projectId: ID!, $contentId: ID!) {
@@ -40,13 +39,13 @@ jobs:
           fi
 
           gh api graphql -f query='
-          mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+          mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!) {
             updateProjectV2ItemFieldValue(
               input: {
                 projectId: $projectId,
                 itemId: $itemId,
                 fieldId: $fieldId,
-                value: { singleSelectOptionId: $optionId }
+                value: { singleSelectOptionId: "98236657" }
               }
             ) {
               projectV2Item { id }
