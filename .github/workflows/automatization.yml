@@ -40,7 +40,7 @@ jobs:
           fi
 
           gh api graphql -f query='
-          mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+          mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: ID!) {
             updateProjectV2ItemFieldValue(
               input: {
                 projectId: $projectId,
@@ -72,7 +72,7 @@ jobs:
           fi
 
           gh api graphql -f query='
-          mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+          mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: ID!) {
             updateProjectV2ItemFieldValue(
               input: {
                 projectId: $projectId,
