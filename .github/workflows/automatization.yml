@@ -46,10 +46,13 @@ jobs:
                 projectId: $projectId,
                 itemId: $itemId,
                 fieldId: $fieldId,
-                value: { singleSelectOptionId: \"98236657\" }
+                value: { singleSelectOptionId: "98236657" }
               }
             ) {
               projectV2Item { id }
             }
           }' -F projectId="$PROJECT_ID" -F itemId="$ITEM_ID" -F fieldId="$STATUS_FIELD_ID" -F optionId="$REVIEW_OPTION_ID"
 
+
+
+     
