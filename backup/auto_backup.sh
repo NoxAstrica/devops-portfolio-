@@ -1,7 +1,7 @@
 #!/bin/bash
 
-SOURCE_DIR="/mnt/d/_Astrica/UNI/4_курс/devops-portfolio-/source"
-BACKUP_DIR="/mnt/d/_Astrica/UNI/4_курс/devops-portfolio-/backup"
+SOURCE_DIR="/d/_Astrica/UNI/4_курс/devops-portfolio-/source"
+BACKUP_DIR="/d/_Astrica/UNI/4_курс/devops-portfolio-/backup"
 LOG_FILE="$BACKUP_DIR/backup.log"
 
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
@@ -22,7 +22,7 @@ BACKUP_COUNT=$(ls -1 backup_*.tar.gz 2>/dev/null | wc -l)
 
 if [ "$BACKUP_COUNT" -gt 5 ]; then
     echo "[$(date)] Cleaning up old backups..." >> "$LOG_FILE"
-    ls -1t backup_*.tar.gz | tail -n +6 | xargs rm -f
+    ls -1tr backup_*.tar.gz | head -n -5 | xargs -r rm -f
     echo "[$(date)] Cleanup done." >> "$LOG_FILE"
 fi
 
