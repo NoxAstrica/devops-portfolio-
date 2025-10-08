@@ -1,0 +1,23 @@
+[
+    {
+        "endpoint": "https://api.github.com",
+        "status_code": 200,
+        "response_time": 0.646,
+        "timestamp": "2025-10-08 10:47:53",
+        "error": null
+    },
+    {
+        "endpoint": "https://httpstat.us/200",
+        "status_code": "ERROR",
+        "response_time": null,
+        "timestamp": "2025-10-08 10:47:54",
+        "error": "('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
+    },
+    {
+        "endpoint": "https://httpstat.us/500",
+        "status_code": "ERROR",
+        "response_time": null,
+        "timestamp": "2025-10-08 10:47:55",
+        "error": "('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
+    }
+]

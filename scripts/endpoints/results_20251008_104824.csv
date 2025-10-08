@@ -1,0 +1,4 @@
+timestamp,endpoint,status_code,response_time,error
+2025-10-08 10:48:20,https://api.github.com,200,0.671,
+2025-10-08 10:48:21,https://httpstat.us/200,ERROR,,"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
+2025-10-08 10:48:22,https://httpstat.us/500,ERROR,,"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
