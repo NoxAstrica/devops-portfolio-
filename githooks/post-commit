@@ -1,0 +1,11 @@
+#!/bin/bash 
+echo "Post-commit backup"
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+bash $REPO_ROOT/backup/auto_backup.sh
+if [ $? -eq 0 ]; then
+    echo "Backup completed successfully."
+else
+    echo "Backup failed!"
+fi

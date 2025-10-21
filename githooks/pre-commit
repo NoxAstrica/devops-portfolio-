@@ -1,0 +1,20 @@
+#!/bin/bash 
+echo "Lint checks before commit"
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+cd "$REPO_ROOT" || exit 1
+
+
+if command -v pylint >/dev/null 2>&1; then
+    PY_FILES=$(git diff --cached --name-only --diff-filter=ACM -- '*.py' ':!node_modules/*')
+    if [ -n "$PY_FILES" ]; then
+        echo "Linting Python scripts"
+        for file in $PY_FILES; do
+            pylint "$file" || { echo "Python linting failed on $file! Commit aborted."; exit 1; }
+        done
+    else
+        echo "No Python files found, skipping Python lint."
+    fi
+else
+    echo "pylint not installed, skipping Python lint."
+fi

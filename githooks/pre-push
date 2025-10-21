@@ -1,0 +1,16 @@
+#!/bin/bash
+echo "Pre-push tests"
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+PY_FILES=$(find "$REPO_ROOT/scripts" -name "*.py")
+if [ -n "$PY_FILES" ]; then
+    for file in $PY_FILES; do 
+        echo "Linting $file..."
+        python -m py_compile "$file" || { echo "Python syntax error in $file"; exit 1; }
+    done
+else
+    echo "No Python files found, skipping Python lint."
+fi
+
+echo "All tests passed"
