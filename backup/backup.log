@@ -38,3 +38,8 @@
 [Tue Oct 21 22:54:18     2025] Cleaning up old backups...
 [Tue Oct 21 22:54:19     2025] Cleanup done.
 [Tue Oct 21 22:54:19     2025] Backup finished
+[Tue Oct 21 22:56:03     2025] Starting backup of /d/_Astrica/UNI/4_курс/devops-portfolio-/source
+[Tue Oct 21 22:56:03     2025] Backup successful: /d/_Astrica/UNI/4_курс/devops-portfolio-/backup/backup_2025-10-21_22-56-03.tar.gz
+[Tue Oct 21 22:56:03     2025] Cleaning up old backups...
+[Tue Oct 21 22:56:03     2025] Cleanup done.
+[Tue Oct 21 22:56:04     2025] Backup finished
